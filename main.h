@@ -6,14 +6,8 @@ extern const int FREDDY_SUMMER_RAS = 10;
 
 class RA {
 public:
-    int id;
     std::string name;
-    int species_id;
-    int height;
-    int weight;
-    int base_experience;
-    int order;
-    int is_default;
+    int availability[7][10];
 };
 
 extern RA All_School_RAs[FREDDY_SCHOOL_RAS];
