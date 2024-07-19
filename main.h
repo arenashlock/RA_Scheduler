@@ -1,12 +1,20 @@
 #ifndef FILES_H
 #define FILES_H
 
+// Cout of RAs during different times in the year
 extern const int FREDDY_SCHOOL_RAS = 29;
 extern const int FREDDY_SUMMER_RAS = 10;
 
+// Experience values for assigning shifts
+extern const int RETURNER = 3;
+extern const int TRANSFER_OR_RFA = 2;
+extern const int NEW_STAFF = 1;
+
 class RA {
 public:
+    int building_number;
     std::string name;
+    int experience;
     int availability[7][10];
 };
 

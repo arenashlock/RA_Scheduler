@@ -52,8 +52,27 @@ void read_availability_file() {
     }
 }
 
+void read_schedule_outline_file() {
+    std::fstream schedule_outline_file;
+    std::string test;
+
+    schedule_outline_file.open("./SAMPLE_schedule_outline.csv", std::fstream::in);
+    std::getline(schedule_outline_file, test);
+
+    // File found
+    if(schedule_outline_file.is_open()) {
+        TEST_print_line(test);
+    }
+    
+    // Cannot read file
+    else {
+        std::cout << "READING NOT WORKING..." << std::endl;
+    }
+}
+
 int main(int argc, char* argv[]) {
-    read_availability_file();
+    //read_availability_file();
+    read_schedule_outline_file();
 
     return 0;
 }
