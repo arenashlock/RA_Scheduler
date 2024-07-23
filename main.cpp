@@ -25,7 +25,7 @@ void output_schedule() {
     schedule_file.close();
 }
 
-void read_availability_file() {
+/*void read_availability_file() {
     std::fstream availability_file;
     std::string test;
 
@@ -41,7 +41,7 @@ void read_availability_file() {
     else {
         std::cout << "READING NOT WORKING..." << std::endl;
     }
-}
+}*/
 
 void read_schedule_outline_file() {
     std::fstream schedule_outline_file;
