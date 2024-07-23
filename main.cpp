@@ -12,28 +12,14 @@ RA All_School_RAs[FREDDY_SCHOOL_RAS];
 // Array of RAs during the summer
 RA All_Summer_RAs[FREDDY_SUMMER_RAS];
 
-void TEST_print_line(std::string test_line) {
-    int end_of_line = 0;
-
-    while(!test_line.empty()) {
-        // Find the substring
-        end_of_line = test_line.find(",");
-
-        // Last substring in the line
-        if(end_of_line < 0) {
-            end_of_line = test_line.length();
-        }
-
-        std::cout << test_line.substr(0, end_of_line) << std::endl;
-        test_line.erase(0, end_of_line + 1);
-    }
-}
-
 void output_schedule() {
+    // Create (or open) file to output the schedule(s) that work
     std::ofstream schedule_file ("schedule.csv");
 
+    // Include the list of RAs and total hours they are scheduled for the job
+    schedule_file << "RA Name, Hours Scheduled" << std::endl;
     for(int i = 0; i < 29; i++) {
-        schedule_file << All_School_RAs[i].RA_name << "," << All_School_RAs[i].RA_hours_scheduled << std::endl;
+        schedule_file << All_School_RAs[i].RA_name << ", " << All_School_RAs[i].RA_hours_scheduled << std::endl;
     }
 
     schedule_file.close();
@@ -48,7 +34,7 @@ void read_availability_file() {
 
     // File found
     if(availability_file.is_open()) {
-        TEST_print_line(test);
+        // ... SOMETHING ...
     }
     
     // Cannot read file
@@ -66,7 +52,7 @@ void read_schedule_outline_file() {
 
     // File found
     if(schedule_outline_file.is_open()) {
-        TEST_print_line(test);
+        // ... SOMETHING ...
     }
     
     // Cannot read file
@@ -130,13 +116,13 @@ int main(int argc, char* argv[]) {
     read_RA_information();
 
     // Test print for ensuring information reading is correct
-    for(int i = 0; i < 29; i++) {
+    /* for(int i = 0; i < 29; i++) {
         std::cout << "Name: " << All_School_RAs[i].RA_name << std::endl <<
         "Building: " << All_School_RAs[i].RA_building_number << std::endl <<
         "Experience: " << All_School_RAs[i].RA_experience << std::endl;
-    }
+    } */
 
-    //read_schedule_outline_file();
+    read_schedule_outline_file();
 
     //read_availability_file();
 
