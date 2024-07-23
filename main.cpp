@@ -65,7 +65,7 @@ void read_schedule_outline_file() {
     }
 }
 
-void build_RA_objects() {
+void read_RA_information() {
     std::fstream frederiksen_court_staff_file;
     std::string staff_member;
 
@@ -94,13 +94,13 @@ void build_RA_objects() {
 
             // Get the experience of the RA (only need to check first character of last field)
             if(staff_member[start_of_read] == 'R') {
-                All_School_RAs[i].RA_experience = 3;
+                All_School_RAs[i].RA_experience = RETURNER;
             }
             else if(staff_member[start_of_read] == 'T') {
-                All_School_RAs[i].RA_experience = 2;
+                All_School_RAs[i].RA_experience = TRANSFER_OR_RFA;
             }
             else {
-                All_School_RAs[i].RA_experience = 1;
+                All_School_RAs[i].RA_experience = NEW_STAFF;
             }
         }
     }
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
     //read_availability_file();
     
     // Build each RA object for the algorithm
-    build_RA_objects();
+    read_RA_information();
 
     // Test print for ensuring information reading is correct
     for(int i = 0; i < 29; i++) {

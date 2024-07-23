@@ -15,6 +15,7 @@ public:
     int RA_building_number;
     std::string RA_name;
     int RA_experience;
+    
     int RA_availability[7][10];
 };
 
