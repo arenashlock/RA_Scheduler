@@ -1,7 +1,6 @@
-Sunday,Shift Length (hours),2,,,
-Shift Time,Role #1,Role #2,Role #3,Role #4,Role #5
-8 AM - 10 AM,Returner,New Staff,Returner,Transfer or RFA,New Staff
-10 AM - 12 PM,Returner,New Staff,Returner,Transfer or RFA,New Staff
-12 PM - 2 PM,Returner,New Staff,Returner,Transfer or RFA,New Staff
-2 PM - 4 PM,Returner,New Staff,Returner,Transfer or RFA,New Staff
-4 PM - 6 PM,Returner,New Staff,Returner,Transfer or RFA,New Staff
+Sunday,Role #1,Role #2,Role #3,Role #4,Role #5
+2,8-10,Returner,New Staff,Returner,Transfer or RFA,New Staff
+2,10-12,Returner,New Staff,Returner,Transfer or RFA,New Staff
+2,12-2,Returner,New Staff,Returner,Transfer or RFA,New Staff
+2,2-4,Returner,New Staff,Returner,Transfer or RFA,New Staff
+3,4-7,Returner,New Staff,Returner,Transfer or RFA,New Staff

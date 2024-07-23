@@ -29,6 +29,16 @@ void TEST_print_line(std::string test_line) {
     }
 }
 
+void output_schedule() {
+    std::ofstream schedule_file ("schedule.csv");
+
+    for(int i = 0; i < 29; i++) {
+        schedule_file << All_School_RAs[i].RA_name << "," << All_School_RAs[i].RA_hours_scheduled << std::endl;
+    }
+
+    schedule_file.close();
+}
+
 void read_availability_file() {
     std::fstream availability_file;
     std::string test;
@@ -102,7 +112,11 @@ void read_RA_information() {
             else {
                 All_School_RAs[i].RA_experience = NEW_STAFF;
             }
+
+            All_School_RAs[i].RA_hours_scheduled = 0;
         }
+
+        frederiksen_court_staff_file.close();
     }
     
     // Cannot read file
@@ -112,8 +126,6 @@ void read_RA_information() {
 }
 
 int main(int argc, char* argv[]) {
-    //read_availability_file();
-    
     // Build each RA object for the algorithm
     read_RA_information();
 
@@ -125,6 +137,11 @@ int main(int argc, char* argv[]) {
     }
 
     //read_schedule_outline_file();
+
+    //read_availability_file();
+
+    // Using the schedule found, output it for the user to access and read
+    output_schedule();
 
     return 0;
 }
