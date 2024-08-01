@@ -4,15 +4,21 @@
 #include <fstream>
 #include <cstring>
 #include <climits>
+#include <ctime>
 
 #include "main.h"
+
+// Information for creating the schedule
+int SHIFTS = 0;
+int POSITIONS = 0;
+int TOTAL_HOURS = 0;
 
 // Array of RAs during the school year
 RA All_School_RAs[FREDDY_SCHOOL_RAS];
 // Array of RAs during the summer
 RA All_Summer_RAs[FREDDY_SUMMER_RAS];
 
-void output_schedule() {
+void output_RA_hours() {
     // Create (or open) file to output the schedule(s) that work
     std::ofstream schedule_file ("schedule.csv");
 
@@ -23,6 +29,15 @@ void output_schedule() {
     }
 
     schedule_file.close();
+}
+
+void make_schedule() {
+    std::srand(std::time(nullptr));
+
+    for(int i = 0; i < 10; i++) {
+        int chosen_RA = std::rand() % 30;
+        std::cout << "Name: " << All_School_RAs[chosen_RA].RA_name << std::endl;
+    }
 }
 
 /*void read_availability_file() {
@@ -45,14 +60,40 @@ void output_schedule() {
 
 void read_schedule_outline_file() {
     std::fstream schedule_outline_file;
-    std::string test;
+    std::string schedule_outline_line;
 
     schedule_outline_file.open("./SAMPLE_schedule_outline.csv", std::fstream::in);
-    std::getline(schedule_outline_file, test);
 
     // File found
     if(schedule_outline_file.is_open()) {
-        // ... SOMETHING ...
+        // Get first line for information
+        std::getline(schedule_outline_file, schedule_outline_line);
+
+        // Get the number of shifts (convert to an int from char)
+        SHIFTS = schedule_outline_line[9] - '0';
+
+        // Get the number of positions (convert to an int from char)
+        POSITIONS = schedule_outline_line[21] - '0';
+
+
+
+
+        int start_of_read = 0; int end_of_read = 0;
+
+        // Get the second line for additional information and the header of the schedule
+        std::getline(schedule_outline_file, schedule_outline_line);
+
+        // Get the building number of the RA
+        end_of_read = schedule_outline_line.find(",");
+        TOTAL_HOURS = stoi(schedule_outline_line.substr(start_of_read, (end_of_read - start_of_read)));
+        start_of_read = end_of_read + 1;
+
+        std::cout << "TOTAL_HOURS = " << TOTAL_HOURS << std::endl;
+        std::cout << schedule_outline_line.substr(start_of_read) << std::endl;
+
+        //while(std::getline(schedule_outline_file, schedule_outline_line)) {
+            // CODE...
+        //}
     }
     
     // Cannot read file
@@ -100,6 +141,7 @@ void read_RA_information() {
             }
 
             All_School_RAs[i].RA_hours_scheduled = 0;
+            All_School_RAs[i].RA_max_hours = false;
         }
 
         frederiksen_court_staff_file.close();
@@ -126,8 +168,11 @@ int main(int argc, char* argv[]) {
 
     //read_availability_file();
 
-    // Using the schedule found, output it for the user to access and read
-    output_schedule();
+    // Make the schedule using DFS
+    //make_schedule();
+
+    // Output the list of RAs and the amount of hours they are working
+    output_RA_hours();
 
     return 0;
 }

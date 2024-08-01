@@ -19,6 +19,7 @@ public:
     int RA_availability[7][10];
 
     int RA_hours_scheduled;
+    bool RA_max_hours;
 };
 
 extern RA All_School_RAs[FREDDY_SCHOOL_RAS];
