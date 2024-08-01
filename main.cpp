@@ -12,6 +12,7 @@
 int SHIFTS = 0;
 int POSITIONS = 0;
 int TOTAL_HOURS = 0;
+std::string SCHEDULE_HEADER;
 
 // Array of RAs during the school year
 RA All_School_RAs[FREDDY_SCHOOL_RAS];
@@ -27,6 +28,15 @@ void output_RA_hours() {
     for(int i = 0; i < 29; i++) {
         schedule_file << All_School_RAs[i].RA_name << ", " << All_School_RAs[i].RA_hours_scheduled << std::endl;
     }
+
+    schedule_file.close();
+}
+
+void output_RA_schedule() {
+    // Create (or open) file to output the schedule(s) that work
+    std::ofstream schedule_file ("schedule.csv");
+
+    // CODE...
 
     schedule_file.close();
 }
@@ -66,21 +76,23 @@ void read_schedule_outline_file() {
 
     // File found
     if(schedule_outline_file.is_open()) {
-        // Get first line for information
+        // ------------------------------- READING LINE #1 -------------------------------
+
         std::getline(schedule_outline_file, schedule_outline_line);
 
         // Get the number of shifts (convert to an int from char)
         SHIFTS = schedule_outline_line[9] - '0';
 
+        /*
+            POTENTIAL BUG: If it is a double-digit number, this doesn't work. Could just read as a string and convert!
+        */
         // Get the number of positions (convert to an int from char)
         POSITIONS = schedule_outline_line[21] - '0';
 
-
-
+        // ------------------------------- READING LINE #2 -------------------------------
 
         int start_of_read = 0; int end_of_read = 0;
 
-        // Get the second line for additional information and the header of the schedule
         std::getline(schedule_outline_file, schedule_outline_line);
 
         // Get the building number of the RA
@@ -88,8 +100,10 @@ void read_schedule_outline_file() {
         TOTAL_HOURS = stoi(schedule_outline_line.substr(start_of_read, (end_of_read - start_of_read)));
         start_of_read = end_of_read + 1;
 
-        std::cout << "TOTAL_HOURS = " << TOTAL_HOURS << std::endl;
-        std::cout << schedule_outline_line.substr(start_of_read) << std::endl;
+        // Header with day and positions in it
+        SCHEDULE_HEADER = schedule_outline_line.substr(start_of_read);
+
+        // ------------------------- READING THE REMAINING LINES -------------------------
 
         //while(std::getline(schedule_outline_file, schedule_outline_line)) {
             // CODE...
