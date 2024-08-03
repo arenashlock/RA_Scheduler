@@ -5,6 +5,7 @@
 extern const int NUM_FREDDY_RAS = 29;
 
 // Experience values for assigning shifts
+extern const int IGNORE = 6;
 extern const int RETURNER = 3;
 extern const int TRANSFER_OR_RFA = 2;
 extern const int NEW_STAFF = 1;

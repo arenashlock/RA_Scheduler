@@ -96,8 +96,11 @@ void read_schedule_outline_ALGORITHM_INFORMATION(int day, int vector_index, std:
         else if(experience[0] == 'T') {
             experience_vector.push_back(TRANSFER_OR_RFA);
         }
-        else {
+        else if(experience[0] == 'N'){
             experience_vector.push_back(NEW_STAFF);
+        }
+        else {
+            experience_vector.push_back(IGNORE);
         }
     }
 
@@ -213,6 +216,7 @@ void read_schedule_outline_file() {
 }
 
 int main(int argc, char* argv[]) {
+    // Variable to check if a schedule was found or not
     int schedule_result = 0;
 
     // Read in the schedule_outline.csv file and set up the data structures and objects
@@ -244,7 +248,7 @@ int main(int argc, char* argv[]) {
         } */
 
     // Run algorithm to find a functional schedule
-
+    // schedule_result = ?
 
     // Output to the schedule.csv file
     if(schedule_result == SCHEDULE_FOUND) {
