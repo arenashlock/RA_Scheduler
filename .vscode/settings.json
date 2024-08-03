@@ -42,6 +42,9 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "algorithm": "cpp",
-        "climits": "cpp"
+        "climits": "cpp",
+        "vector": "cpp",
+        "__split_buffer": "cpp",
+        "array": "cpp"
     }
 }

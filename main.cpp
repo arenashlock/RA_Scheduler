@@ -5,38 +5,35 @@
 #include <cstring>
 #include <climits>
 #include <ctime>
+#include <vector>
 
 #include "main.h"
 
-// Array of all the Freddy RAs
-RA All_RAs[NUM_FREDDY_RAS];
-
-// Global variables containing information about the schedule to make
-int SCHEDULE_TOTAL_DAYS;
-int SCHEDULE_TOTAL_HOURS;
+// Global schedule variable (that essentially everything runs through)
+SCHEDULE Final_Schedule;
 
 void read_staff_line(int array_index, std::string file_line) {
     int start = 0; int end = 0;
 
     // Get the building number of the RA
     end = file_line.find(",");
-    All_RAs[array_index].RA_building_number = stoi(file_line.substr(start, (end - start)));
+    Final_Schedule.SCHEDULE_all_RAs[array_index].RA_building_number = stoi(file_line.substr(start, (end - start)));
     start = end + 1;
 
     // Get the name of the RA
     end = file_line.find(",", start);
-    All_RAs[array_index].RA_name = file_line.substr(start, (end - start));
+    Final_Schedule.SCHEDULE_all_RAs[array_index].RA_name = file_line.substr(start, (end - start));
     start = end + 1;
 
     // Get the experience of the RA (only need to check first character of last field)
     if(file_line[start] == 'R') {
-        All_RAs[array_index].RA_experience = RETURNER;
+        Final_Schedule.SCHEDULE_all_RAs[array_index].RA_experience = RETURNER;
     }
     else if(file_line[start] == 'T') {
-        All_RAs[array_index].RA_experience = TRANSFER_OR_RFA;
+        Final_Schedule.SCHEDULE_all_RAs[array_index].RA_experience = TRANSFER_OR_RFA;
     }
     else {
-        All_RAs[array_index].RA_experience = NEW_STAFF;
+        Final_Schedule.SCHEDULE_all_RAs[array_index].RA_experience = NEW_STAFF;
     }
 }
 
@@ -58,8 +55,8 @@ void read_staff_file() {
             read_staff_line(i, file_line);
 
             // Set some variables not read from the line
-            All_RAs[i].RA_hours_scheduled = 0;
-            All_RAs[i].RA_max_hours = false;
+            Final_Schedule.SCHEDULE_all_RAs[i].RA_hours_scheduled = 0;
+            Final_Schedule.SCHEDULE_all_RAs[i].RA_max_hours = false;
         }
 
         frederiksen_court_staff_file.close();
@@ -71,22 +68,194 @@ void read_staff_file() {
     }
 }
 
-int main(int argc, char* argv[]) {
-    // Read in the schedule_outline.csv file and set up the data structures and objects
+void read_schedule_outline_ALGORITHM_INFORMATION(int day, int vector_index, std::string file_line) {
+    // Variables for reading the line
+    int start; int end;
 
+    // Get the length of the shift
+    Final_Schedule.SCHEDULE_days[day].DAY_shift_hours.push_back((int) file_line[0] - '0');
+
+    // Get the timeframe of the shift
+    start = 2; end = file_line.find(",", start);
+    Final_Schedule.SCHEDULE_days[day].DAY_shift_timeframe.push_back(file_line.substr(start, (end - start)));
+                    
+    // Make a vector for the experience of each position in the shift
+    std::vector<int> experience_vector;
+
+    // Get the experience necessary for the shift
+    for(int i = 0; i < Final_Schedule.SCHEDULE_days[day].DAY_positions; i++) {
+        start = end + 1; end = file_line.find(",", start);
+
+        // Get the string stating what the experience should be
+        std::string experience = file_line.substr(start, (end - start));
+
+        // Parse the experience string
+        if(experience[0] == 'R') {
+            experience_vector.push_back(RETURNER);
+        }
+        else if(experience[0] == 'T') {
+            experience_vector.push_back(TRANSFER_OR_RFA);
+        }
+        else {
+            experience_vector.push_back(NEW_STAFF);
+        }
+    }
+
+    // Update the shift's vector to the newly created one from the file
+    Final_Schedule.SCHEDULE_days[day].DAY_shift_experience.push_back(experience_vector);
+}
+
+void read_schedule_outline_DAY_INFORMATION(std::string file_line) {
+    // Create a new DAY object
+    DAY new_day;
+
+    // Variables for reading the line
+    int start; int end;
+
+    // Get the number of shifts
+    start = 8; end = file_line.find(",", start);
+    new_day.DAY_shifts = stoi(file_line.substr(start, (end - start)));
+                    
+    // Get the number of positions
+    start = end + 11; end = file_line.find(",", start);
+    new_day.DAY_positions = stoi(file_line.substr(start, (end - start)));
+
+    // Add the day to the Final_Schedule object
+    Final_Schedule.SCHEDULE_days.push_back(new_day);
+}
+
+void read_schedule_outline_SCHEDULE_INFORMATION(std::string file_line) {
+    // Variables for reading the line
+    int start; int end;
+
+    // Get the number of days
+    start = 6; end = file_line.find(",", start);
+    Final_Schedule.SCHEDULE_num_days = stoi(file_line.substr(start, (end - start)));
+        
+    // Get the total number of hours
+    start = end + 13; end = file_line.find(",", start);
+    Final_Schedule.SCHEDULE_total_hours = stoi(file_line.substr(start, (end - start)));
+}
+
+void read_schedule_outline_file() {
+    std::fstream schedule_outline_file;
+    std::string file_line;
+
+    schedule_outline_file.open("./SAMPLE_schedule_outline.csv", std::fstream::in);
+
+    // File found
+    if(schedule_outline_file.is_open()) {
+        // Get the information for SCHEDULE
+        std::getline(schedule_outline_file, file_line);
+
+        // Call the funtion to derive the information for the schedule
+        read_schedule_outline_SCHEDULE_INFORMATION(file_line);
+
+        // Keep count of the days for accessing the correct vector entry
+        int day = 0;
+
+        // Boolean to know if it is the header of the day
+        bool header = false;
+
+        // Start reading the information for the days in the schedule
+        while(std::getline(schedule_outline_file, file_line)) {
+            // Either a blank line in the sheet or information about the day
+            if(file_line[0] == ',') {
+                if(file_line[1] == 'S') {
+                    // Call the funtion to derive the information for the schedule
+                    read_schedule_outline_DAY_INFORMATION(file_line);
+
+                    // Going to be looking at the header next
+                    header = true;
+                }
+            }
+
+            // Part of the schedule
+            else {
+                if(header == true) {
+                    int start = file_line.find(',') + 1;
+                    Final_Schedule.SCHEDULE_days[day].DAY_header = file_line.substr(start);
+
+                    // Moving onto reading the hours and experience necessary for each shift
+                    header = false;
+                }
+
+                else {
+                    // Create a temporary variable to make for loop more readable
+                    int day_shifts = Final_Schedule.SCHEDULE_days[day].DAY_shifts;
+
+                    for(int i = 0; i < day_shifts; i++) {
+                        if(i == 0) {
+                            // SKIP THE GETLINE (since we got it during the while loop)
+                        }
+
+                        else {
+                            std::getline(schedule_outline_file, file_line);
+                        }
+
+                        // Run the function to derive the shift hours and experience necessary
+                        read_schedule_outline_ALGORITHM_INFORMATION(day, i, file_line);
+                    }
+
+                    // Done reading information for this day
+                    day++;
+                }
+            }
+        }
+
+        schedule_outline_file.close();
+    }
+    
+    // Cannot read file
+    else {
+        std::cout << "FILE NOT FOUND..." << std::endl;
+    }
+}
+
+int main(int argc, char* argv[]) {
+    int schedule_result = 0;
+
+    // Read in the schedule_outline.csv file and set up the data structures and objects
+    read_schedule_outline_file();
+
+        // TEST: To make sure the schedule's information is read correctly
+        /* std::cout << "Number of days: " << Final_Schedule.SCHEDULE_num_days << ", Total hours: " << Final_Schedule.SCHEDULE_total_hours << std::endl;
+        for(int i = 0; i < Final_Schedule.SCHEDULE_num_days; i++) {
+            DAY test_day = Final_Schedule.SCHEDULE_days[i];
+            std::cout << "\nDay #" << i << ", Number of shifts: " << test_day.DAY_shifts << ", Number of positions: " << test_day.DAY_positions << std::endl <<
+            "Header: " << test_day.DAY_header << std::endl;
+            for(int j = 0; j < test_day.DAY_shifts; j++) {
+                std::cout << "Length of shift: " << test_day.DAY_shift_hours[j] << ", Timeframe: " << test_day.DAY_shift_timeframe[j];
+                for(int k = 0; k < test_day.DAY_positions; k++) {
+                    std::cout << " " << test_day.DAY_shift_experience[j][k];
+                }
+                std::cout << std::endl;
+            }
+        } */
 
     // Read the frederiksen_court_staff.csv file and build each RA object
     read_staff_file();
 
-    // Little test to make sure the staff information is read correctly
-    /* for(int i = 0; i < 29; i++) {
-        std::cout << "Name: " << All_RAs[i].RA_name << std::endl <<
-        "Building: " << All_RAs[i].RA_building_number << std::endl <<
-        "Experience: " << All_RAs[i].RA_experience << std::endl;
-    } */
+        // TEST: To make sure the staff's information is read correctly
+        /* for(int l = 0; l < 29; l++) {
+            std::cout << "Name: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_name << std::endl <<
+            "Building: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_building_number << std::endl <<
+            "Experience: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_experience << std::endl;
+        } */
 
-    // 
+    // Run algorithm to find a functional schedule
 
+
+    // Output to the schedule.csv file
+    if(schedule_result == SCHEDULE_FOUND) {
+        // OUTPUT
+    }
+    else {
+        std::cout << "Schedule not found..." << std::endl;
+    }
+
+    // SPACE TO TEST STUFF BEFORE WRITING CODE
+    
 
     return 0;
 }
