@@ -8,7 +8,112 @@
 
 #include "main.h"
 
-// Information for creating the schedule
+// Array of all the Freddy RAs
+RA All_RAs[NUM_FREDDY_RAS];
+
+// Global variables containing information about the schedule to make
+int SCHEDULE_TOTAL_DAYS;
+int SCHEDULE_TOTAL_HOURS;
+
+void read_staff_line(int array_index, std::string file_line) {
+    int start = 0; int end = 0;
+
+    // Get the building number of the RA
+    end = file_line.find(",");
+    All_RAs[array_index].RA_building_number = stoi(file_line.substr(start, (end - start)));
+    start = end + 1;
+
+    // Get the name of the RA
+    end = file_line.find(",", start);
+    All_RAs[array_index].RA_name = file_line.substr(start, (end - start));
+    start = end + 1;
+
+    // Get the experience of the RA (only need to check first character of last field)
+    if(file_line[start] == 'R') {
+        All_RAs[array_index].RA_experience = RETURNER;
+    }
+    else if(file_line[start] == 'T') {
+        All_RAs[array_index].RA_experience = TRANSFER_OR_RFA;
+    }
+    else {
+        All_RAs[array_index].RA_experience = NEW_STAFF;
+    }
+}
+
+void read_staff_file() {
+    std::fstream frederiksen_court_staff_file;
+    std::string file_line;
+
+    frederiksen_court_staff_file.open("./frederiksen_court_staff.csv", std::fstream::in);
+
+    // File found
+    if(frederiksen_court_staff_file.is_open()) {
+        // Throw out the first line (just labels for data)
+        std::getline(frederiksen_court_staff_file, file_line);
+
+        for(int i = 0; i < 29; i++) {
+            std::getline(frederiksen_court_staff_file, file_line);
+
+            // Call the function to read the singular line and set some variables
+            read_staff_line(i, file_line);
+
+            // Set some variables not read from the line
+            All_RAs[i].RA_hours_scheduled = 0;
+            All_RAs[i].RA_max_hours = false;
+        }
+
+        frederiksen_court_staff_file.close();
+    }
+    
+    // Cannot read file
+    else {
+        std::cout << "FILE NOT FOUND..." << std::endl;
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Read in the schedule_outline.csv file and set up the data structures and objects
+
+
+    // Read the frederiksen_court_staff.csv file and build each RA object
+    read_staff_file();
+
+    // Little test to make sure the staff information is read correctly
+    /* for(int i = 0; i < 29; i++) {
+        std::cout << "Name: " << All_RAs[i].RA_name << std::endl <<
+        "Building: " << All_RAs[i].RA_building_number << std::endl <<
+        "Experience: " << All_RAs[i].RA_experience << std::endl;
+    } */
+
+    // 
+
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* // Information for creating the schedule
 int SHIFTS = 0;
 int POSITIONS = 0;
 int TOTAL_HOURS = 0;
@@ -50,7 +155,7 @@ void make_schedule() {
     }
 }
 
-/*void read_availability_file() {
+void read_availability_file() {
     std::fstream availability_file;
     std::string test;
 
@@ -68,7 +173,7 @@ void make_schedule() {
     }
 }*/
 
-void read_schedule_outline_file() {
+/* void read_schedule_outline_file() {
     std::fstream schedule_outline_file;
     std::string schedule_outline_line;
 
@@ -83,11 +188,11 @@ void read_schedule_outline_file() {
         // Get the number of shifts (convert to an int from char)
         SHIFTS = schedule_outline_line[9] - '0';
 
-        /*
+        
             POTENTIAL BUG: If it is a double-digit number, this doesn't work. Could just read as a string and convert!
         */
         // Get the number of positions (convert to an int from char)
-        POSITIONS = schedule_outline_line[21] - '0';
+        /* POSITIONS = schedule_outline_line[21] - '0';
 
         // ------------------------------- READING LINE #2 -------------------------------
 
@@ -116,69 +221,9 @@ void read_schedule_outline_file() {
     }
 }
 
-void read_RA_information() {
-    std::fstream frederiksen_court_staff_file;
-    std::string staff_member;
-
-    frederiksen_court_staff_file.open("./frederiksen_court_staff.csv", std::fstream::in);
-
-    // File found
-    if(frederiksen_court_staff_file.is_open()) {
-        // Throw out the first line (just labels for data)
-        std::getline(frederiksen_court_staff_file, staff_member);
-
-        for(int i = 0; i < 29; i++) {
-            int start_of_read = 0; int end_of_read = 0;
-
-            // Get the line with the RA's information
-            std::getline(frederiksen_court_staff_file, staff_member);
-
-            // Get the building number of the RA
-            end_of_read = staff_member.find(",");
-            All_School_RAs[i].RA_building_number = stoi(staff_member.substr(start_of_read, (end_of_read - start_of_read)));
-            start_of_read = end_of_read + 1;
-
-            // Get the name of the RA
-            end_of_read = staff_member.find(",", start_of_read);
-            All_School_RAs[i].RA_name = staff_member.substr(start_of_read, (end_of_read - start_of_read));
-            start_of_read = end_of_read + 1;
-
-            // Get the experience of the RA (only need to check first character of last field)
-            if(staff_member[start_of_read] == 'R') {
-                All_School_RAs[i].RA_experience = RETURNER;
-            }
-            else if(staff_member[start_of_read] == 'T') {
-                All_School_RAs[i].RA_experience = TRANSFER_OR_RFA;
-            }
-            else {
-                All_School_RAs[i].RA_experience = NEW_STAFF;
-            }
-
-            All_School_RAs[i].RA_hours_scheduled = 0;
-            All_School_RAs[i].RA_max_hours = false;
-        }
-
-        frederiksen_court_staff_file.close();
-    }
-    
-    // Cannot read file
-    else {
-        std::cout << "READING NOT WORKING..." << std::endl;
-    }
-}
-
 int main(int argc, char* argv[]) {
-    // Build each RA object for the algorithm
-    read_RA_information();
 
-    // Test print for ensuring information reading is correct
-    /* for(int i = 0; i < 29; i++) {
-        std::cout << "Name: " << All_School_RAs[i].RA_name << std::endl <<
-        "Building: " << All_School_RAs[i].RA_building_number << std::endl <<
-        "Experience: " << All_School_RAs[i].RA_experience << std::endl;
-    } */
-
-    read_schedule_outline_file();
+     read_schedule_outline_file();
 
     //read_availability_file();
 
@@ -189,4 +234,4 @@ int main(int argc, char* argv[]) {
     output_RA_hours();
 
     return 0;
-}
+} */
