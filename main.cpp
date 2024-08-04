@@ -12,6 +12,56 @@
 // Global schedule variable (that essentially everything runs through)
 SCHEDULE Final_Schedule;
 
+void output_schedule_to_file() {
+    // Create (or open) file to output the schedule that works
+    std::ofstream schedule_file ("schedule.csv");
+
+    for(int i = 0; i < Final_Schedule.SCHEDULE_num_days; i++) {
+        // Output the header for the day prior to the schedule
+        schedule_file << Final_Schedule.SCHEDULE_days[i].DAY_header << std::endl;
+
+        // Output the actual schedule
+        for(int j = 0; j < Final_Schedule.SCHEDULE_days[i].DAY_shifts; j++) {
+            // Get the timeframe for the shift
+            schedule_file << Final_Schedule.SCHEDULE_days[i].DAY_shift_timeframe[j] << ",";
+
+            // Get the shift lineup
+            for(int k = 0; k < Final_Schedule.SCHEDULE_days[i].DAY_positions; k++) {
+                schedule_file << Final_Schedule.SCHEDULE_days[i].DAY_final_schedule[j][k] << ",";
+            }
+            
+            schedule_file << std::endl;
+        }
+    }
+
+    // Include the list of RAs and total hours they are scheduled for the job
+    schedule_file << ",\nRA Name,Hours Scheduled" << std::endl;
+    for(int i = 0; i < 29; i++) {
+        schedule_file << Final_Schedule.SCHEDULE_all_RAs[i].RA_name << "," << Final_Schedule.SCHEDULE_all_RAs[i].RA_hours_scheduled << std::endl;
+    }
+
+    schedule_file.close();
+}
+
+int find_schedule() {
+    for(int i = 0; i < Final_Schedule.SCHEDULE_num_days; i++) {
+        for(int j = 0; j < Final_Schedule.SCHEDULE_days[i].DAY_shifts; j++) {
+            std::vector<std::string> shift_lineup;
+            for(int k = 0; k < Final_Schedule.SCHEDULE_days[i].DAY_positions; k++) {
+                if(Final_Schedule.SCHEDULE_days[i].DAY_shift_experience[j][k] < 6) {
+                    shift_lineup.push_back("Your mom");
+                }
+                else {
+                    shift_lineup.push_back("N/A");
+                }
+            }
+            Final_Schedule.SCHEDULE_days[i].DAY_final_schedule.push_back(shift_lineup);
+        }
+    }
+
+    return SCHEDULE_FOUND;
+}
+
 void read_staff_line(int array_index, std::string file_line) {
     int start = 0; int end = 0;
 
@@ -248,18 +298,17 @@ int main(int argc, char* argv[]) {
         } */
 
     // Run algorithm to find a functional schedule
-    // schedule_result = ?
+    schedule_result = find_schedule();
 
     // Output to the schedule.csv file
     if(schedule_result == SCHEDULE_FOUND) {
-        // OUTPUT
+        output_schedule_to_file();
     }
+    
+    // Algorithm couldn't find a schedule (currently just fail, but implement rollback in the future)
     else {
         std::cout << "Schedule not found..." << std::endl;
-    }
-
-    // SPACE TO TEST STUFF BEFORE WRITING CODE
-    
+    }    
 
     return 0;
 }

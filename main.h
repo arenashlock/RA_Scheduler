@@ -36,7 +36,7 @@ public:
     // The nested vector should be the experience ratings
     std::vector<std::vector<int> > DAY_shift_experience;
     // Need 2 separate 2D vectors in case backtracking is required
-    std::vector<std::vector<int> > DAY_final_schedule;
+    std::vector<std::vector<std::string> > DAY_final_schedule;
 };
 
 class SCHEDULE {
