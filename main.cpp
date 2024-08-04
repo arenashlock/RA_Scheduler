@@ -44,12 +44,24 @@ void output_schedule_to_file() {
 }
 
 int find_schedule() {
+    std::srand(std::time(nullptr));
+
     for(int i = 0; i < Final_Schedule.SCHEDULE_num_days; i++) {
         for(int j = 0; j < Final_Schedule.SCHEDULE_days[i].DAY_shifts; j++) {
             std::vector<std::string> shift_lineup;
             for(int k = 0; k < Final_Schedule.SCHEDULE_days[i].DAY_positions; k++) {
                 if(Final_Schedule.SCHEDULE_days[i].DAY_shift_experience[j][k] < 6) {
-                    shift_lineup.push_back("Your mom");
+                    int chosen_RA = std::rand() % NUM_FREDDY_RAS;
+                    while(Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_max_hours) {
+                        chosen_RA = std::rand() % NUM_FREDDY_RAS;
+                    }
+                    std::string chosen_RA_name = Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_name;
+                    shift_lineup.push_back(chosen_RA_name);
+                    Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_hours_scheduled += Final_Schedule.SCHEDULE_days[i].DAY_shift_hours[j];
+                    if(Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_hours_scheduled == Final_Schedule.SCHEDULE_max_hours_per_RA ||
+                    Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_hours_scheduled == (Final_Schedule.SCHEDULE_max_hours_per_RA + 1)) {
+                        Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_max_hours = true;
+                    }
                 }
                 else {
                     shift_lineup.push_back("N/A");
@@ -75,7 +87,7 @@ void read_staff_line(int array_index, std::string file_line) {
     Final_Schedule.SCHEDULE_all_RAs[array_index].RA_name = file_line.substr(start, (end - start));
     start = end + 1;
 
-    // Get the experience of the RA (only need to check first character of last field)
+    // Get the experience of the RA (only need to check first character)
     if(file_line[start] == 'R') {
         Final_Schedule.SCHEDULE_all_RAs[array_index].RA_experience = RETURNER;
     }
@@ -84,6 +96,19 @@ void read_staff_line(int array_index, std::string file_line) {
     }
     else {
         Final_Schedule.SCHEDULE_all_RAs[array_index].RA_experience = NEW_STAFF;
+    }
+    end = file_line.find(",", start); start = end + 1;
+
+    // Get the number of hours already worked
+    Final_Schedule.SCHEDULE_all_RAs[array_index].RA_hours_scheduled = stoi(file_line.substr(start));
+
+    // Set the boolean for working max hours by checking how many hours they have already worked
+    if(Final_Schedule.SCHEDULE_all_RAs[array_index].RA_hours_scheduled == Final_Schedule.SCHEDULE_max_hours_per_RA ||
+    Final_Schedule.SCHEDULE_all_RAs[array_index].RA_hours_scheduled == (Final_Schedule.SCHEDULE_max_hours_per_RA + 1)) {
+        Final_Schedule.SCHEDULE_all_RAs[array_index].RA_max_hours = true;
+    }
+    else {
+        Final_Schedule.SCHEDULE_all_RAs[array_index].RA_max_hours = false;
     }
 }
 
@@ -103,10 +128,6 @@ void read_staff_file() {
 
             // Call the function to read the singular line and set some variables
             read_staff_line(i, file_line);
-
-            // Set some variables not read from the line
-            Final_Schedule.SCHEDULE_all_RAs[i].RA_hours_scheduled = 0;
-            Final_Schedule.SCHEDULE_all_RAs[i].RA_max_hours = false;
         }
 
         frederiksen_court_staff_file.close();
@@ -188,6 +209,9 @@ void read_schedule_outline_SCHEDULE_INFORMATION(std::string file_line) {
     // Get the total number of hours
     start = end + 13; end = file_line.find(",", start);
     Final_Schedule.SCHEDULE_total_hours = stoi(file_line.substr(start, (end - start)));
+
+    // Find the max number of hours each RA can work (for a balanced schedule)
+    Final_Schedule.SCHEDULE_max_hours_per_RA = Final_Schedule.SCHEDULE_total_hours / NUM_FREDDY_RAS;
 }
 
 void read_schedule_outline_file() {
@@ -291,11 +315,12 @@ int main(int argc, char* argv[]) {
     read_staff_file();
 
         // TEST: To make sure the staff's information is read correctly
-        /* for(int l = 0; l < 29; l++) {
+         for(int l = 0; l < NUM_FREDDY_RAS; l++) {
             std::cout << "Name: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_name << std::endl <<
             "Building: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_building_number << std::endl <<
-            "Experience: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_experience << std::endl;
-        } */
+            "Experience: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_experience << std::endl <<
+            "Hours Worked: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_hours_scheduled << std::endl;
+        } 
 
     // Run algorithm to find a functional schedule
     schedule_result = find_schedule();
@@ -308,7 +333,9 @@ int main(int argc, char* argv[]) {
     // Algorithm couldn't find a schedule (currently just fail, but implement rollback in the future)
     else {
         std::cout << "Schedule not found..." << std::endl;
-    }    
+    }
+
+    std::cout << "Max hours = " << Final_Schedule.SCHEDULE_max_hours_per_RA << std::endl;
 
     return 0;
 }
@@ -372,7 +399,7 @@ void make_schedule() {
     std::srand(std::time(nullptr));
 
     for(int i = 0; i < 10; i++) {
-        int chosen_RA = std::rand() % 30;
+        int chosen_RA = std::rand() % 29;
         std::cout << "Name: " << All_School_RAs[chosen_RA].RA_name << std::endl;
     }
 }
@@ -394,66 +421,3 @@ void read_availability_file() {
         std::cout << "READING NOT WORKING..." << std::endl;
     }
 }*/
-
-/* void read_schedule_outline_file() {
-    std::fstream schedule_outline_file;
-    std::string schedule_outline_line;
-
-    schedule_outline_file.open("./SAMPLE_schedule_outline.csv", std::fstream::in);
-
-    // File found
-    if(schedule_outline_file.is_open()) {
-        // ------------------------------- READING LINE #1 -------------------------------
-
-        std::getline(schedule_outline_file, schedule_outline_line);
-
-        // Get the number of shifts (convert to an int from char)
-        SHIFTS = schedule_outline_line[9] - '0';
-
-        
-            POTENTIAL BUG: If it is a double-digit number, this doesn't work. Could just read as a string and convert!
-        */
-        // Get the number of positions (convert to an int from char)
-        /* POSITIONS = schedule_outline_line[21] - '0';
-
-        // ------------------------------- READING LINE #2 -------------------------------
-
-        int start_of_read = 0; int end_of_read = 0;
-
-        std::getline(schedule_outline_file, schedule_outline_line);
-
-        // Get the building number of the RA
-        end_of_read = schedule_outline_line.find(",");
-        TOTAL_HOURS = stoi(schedule_outline_line.substr(start_of_read, (end_of_read - start_of_read)));
-        start_of_read = end_of_read + 1;
-
-        // Header with day and positions in it
-        SCHEDULE_HEADER = schedule_outline_line.substr(start_of_read);
-
-        // ------------------------- READING THE REMAINING LINES -------------------------
-
-        //while(std::getline(schedule_outline_file, schedule_outline_line)) {
-            // CODE...
-        //}
-    }
-    
-    // Cannot read file
-    else {
-        std::cout << "READING NOT WORKING..." << std::endl;
-    }
-}
-
-int main(int argc, char* argv[]) {
-
-     read_schedule_outline_file();
-
-    //read_availability_file();
-
-    // Make the schedule using DFS
-    //make_schedule();
-
-    // Output the list of RAs and the amount of hours they are working
-    output_RA_hours();
-
-    return 0;
-} */

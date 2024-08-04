@@ -44,6 +44,8 @@ public:
     int SCHEDULE_num_days;
     int SCHEDULE_total_hours;
 
+    int SCHEDULE_max_hours_per_RA;
+
     std::vector<DAY> SCHEDULE_days;
     RA SCHEDULE_all_RAs[NUM_FREDDY_RAS];
 };
