@@ -12,6 +12,7 @@ extern const int NEW_STAFF = 1;
 
 // Constant to make the code more readable for if a schedule is found
 extern const int SCHEDULE_FOUND = 1;
+extern const int SCHEDULE_NOT_FOUND = 0;
 
 class RA {
 public:
@@ -44,6 +45,7 @@ public:
     int SCHEDULE_num_days;
     int SCHEDULE_total_hours;
 
+    bool SCHEDULE_max_hours_is_int;
     int SCHEDULE_max_hours_per_RA;
 
     std::vector<DAY> SCHEDULE_days;

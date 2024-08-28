@@ -43,31 +43,104 @@ void output_schedule_to_file() {
     schedule_file.close();
 }
 
+std::vector<int> find_eligible_RAs(int shift_hours, int experience, std::vector<std::string> shift_lineup) {
+    std::vector<int> eligible_RAs;
+
+    for(int RA_index = 0; RA_index < NUM_FREDDY_RAS; RA_index++) {
+        // Get the RA for this iteration
+        RA checking_RA = Final_Schedule.SCHEDULE_all_RAs[RA_index];
+
+        // Initially set eligibility to be true and check if they become ineligible
+        bool eligible = true;
+
+        // See if they have reached maxed hours scheduled
+        if(eligible && checking_RA.RA_max_hours) {
+            eligible = false;
+        }
+
+        // Make sure the RA won't be schduled more than the average RA
+        if(eligible && ((checking_RA.RA_hours_scheduled + shift_hours) > (Final_Schedule.SCHEDULE_max_hours_per_RA + 1))) {
+            eligible = false;
+        }
+
+        // Not enough experience for this position
+        if(eligible && (checking_RA.RA_experience < experience)) {
+            eligible = false;
+        }
+
+        // The RA has passed all the qualifications, so just make sure they haven't been scheduled for that shift already
+        if(eligible) {
+            for(int shift_lineup_index = 0; shift_lineup_index < shift_lineup.size(); shift_lineup_index++) {
+                // RA name is the same, so they have already been scheduled
+                if(checking_RA.RA_name.compare(shift_lineup[shift_lineup_index]) == 0) {
+                    eligible = false;
+                    break;
+                }
+            }
+        }
+
+        // Add the RA to the list of eligible RAs
+        if(eligible) {
+            eligible_RAs.push_back(RA_index);
+        }
+    }
+
+    return eligible_RAs;
+}
+
 int find_schedule() {
     std::srand(std::time(nullptr));
 
-    for(int i = 0; i < Final_Schedule.SCHEDULE_num_days; i++) {
-        for(int j = 0; j < Final_Schedule.SCHEDULE_days[i].DAY_shifts; j++) {
+    for(int day = 0; day < Final_Schedule.SCHEDULE_num_days; day++) {
+        // To save space, just make one vector for randomly selecting an RA
+        std::vector<int> eligible_RAs;
+
+        for(int shift = 0; shift < Final_Schedule.SCHEDULE_days[day].DAY_shifts; shift++) {
+            // We are building the lineup of RAs for that shift since there are multiple positions
             std::vector<std::string> shift_lineup;
-            for(int k = 0; k < Final_Schedule.SCHEDULE_days[i].DAY_positions; k++) {
-                if(Final_Schedule.SCHEDULE_days[i].DAY_shift_experience[j][k] < 6) {
-                    int chosen_RA = std::rand() % NUM_FREDDY_RAS;
-                    while(Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_max_hours) {
-                        chosen_RA = std::rand() % NUM_FREDDY_RAS;
+
+            for(int position = 0; position < Final_Schedule.SCHEDULE_days[day].DAY_positions; position++) {
+                // Get the experience needed for this current position (to make code easier to read later)
+                int experience = Final_Schedule.SCHEDULE_days[day].DAY_shift_experience[shift][position];
+
+                // Find the hours of the shift (to prevent overscheduling)
+                int shift_hours = Final_Schedule.SCHEDULE_days[day].DAY_shift_hours[shift];
+
+                // For the spots that are to be ignored, don't go through algorithm and just put "N/A"
+                if(experience != IGNORE) {
+                    // Need to schedule an RA, so find all the eligible RAs
+                    eligible_RAs = find_eligible_RAs(shift_hours, experience, shift_lineup);
+
+                    // No RAs are eligible (so we need to go back a layer to try another RA)
+                    if(eligible_RAs.size() == 0) {
+                        std::cout << "NO ELIGIBLE RA FOUND" << std::endl;
+                        return SCHEDULE_NOT_FOUND;
                     }
-                    std::string chosen_RA_name = Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_name;
+
+                    // Choose an RA from the eligible RAs
+                    int chosen_RA_index = std::rand() % eligible_RAs.size();
+                    
+                    // Add the RA to the shift lineup
+                    std::string chosen_RA_name = Final_Schedule.SCHEDULE_all_RAs[chosen_RA_index].RA_name;
                     shift_lineup.push_back(chosen_RA_name);
-                    Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_hours_scheduled += Final_Schedule.SCHEDULE_days[i].DAY_shift_hours[j];
-                    if(Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_hours_scheduled == Final_Schedule.SCHEDULE_max_hours_per_RA ||
-                    Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_hours_scheduled == (Final_Schedule.SCHEDULE_max_hours_per_RA + 1)) {
-                        Final_Schedule.SCHEDULE_all_RAs[chosen_RA].RA_max_hours = true;
+
+                    // Increase the number of hours the RA is scheduled for
+                    Final_Schedule.SCHEDULE_all_RAs[chosen_RA_index].RA_hours_scheduled += shift_hours;
+
+                    // Check if the RA has reached the max hours of scheduling
+                    if(Final_Schedule.SCHEDULE_all_RAs[chosen_RA_index].RA_hours_scheduled == Final_Schedule.SCHEDULE_max_hours_per_RA ||
+                    Final_Schedule.SCHEDULE_all_RAs[chosen_RA_index].RA_hours_scheduled == (Final_Schedule.SCHEDULE_max_hours_per_RA + 1)) {
+                        Final_Schedule.SCHEDULE_all_RAs[chosen_RA_index].RA_max_hours = true;
                     }
+
+                    // Empty the eligible_RAs vector for reuse
+                    eligible_RAs.empty();
                 }
                 else {
                     shift_lineup.push_back("N/A");
                 }
             }
-            Final_Schedule.SCHEDULE_days[i].DAY_final_schedule.push_back(shift_lineup);
+            Final_Schedule.SCHEDULE_days[day].DAY_final_schedule.push_back(shift_lineup);
         }
     }
 
@@ -212,6 +285,14 @@ void read_schedule_outline_SCHEDULE_INFORMATION(std::string file_line) {
 
     // Find the max number of hours each RA can work (for a balanced schedule)
     Final_Schedule.SCHEDULE_max_hours_per_RA = Final_Schedule.SCHEDULE_total_hours / NUM_FREDDY_RAS;
+        // Every RA should have the same number of hours
+        if(Final_Schedule.SCHEDULE_total_hours % NUM_FREDDY_RAS == 0) {
+            Final_Schedule.SCHEDULE_max_hours_is_int = true;
+        }
+        // Need to go +1 potentially for some RAs
+        else {
+            Final_Schedule.SCHEDULE_max_hours_is_int = false;
+        }
 }
 
 void read_schedule_outline_file() {
@@ -315,12 +396,12 @@ int main(int argc, char* argv[]) {
     read_staff_file();
 
         // TEST: To make sure the staff's information is read correctly
-         for(int l = 0; l < NUM_FREDDY_RAS; l++) {
+        /* for(int l = 0; l < NUM_FREDDY_RAS; l++) {
             std::cout << "Name: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_name << std::endl <<
             "Building: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_building_number << std::endl <<
             "Experience: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_experience << std::endl <<
             "Hours Worked: " << Final_Schedule.SCHEDULE_all_RAs[l].RA_hours_scheduled << std::endl;
-        } 
+        } */
 
     // Run algorithm to find a functional schedule
     schedule_result = find_schedule();
@@ -334,8 +415,6 @@ int main(int argc, char* argv[]) {
     else {
         std::cout << "Schedule not found..." << std::endl;
     }
-
-    std::cout << "Max hours = " << Final_Schedule.SCHEDULE_max_hours_per_RA << std::endl;
 
     return 0;
 }
