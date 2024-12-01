@@ -1,5 +1,5 @@
 public class RA {
-    enum Experience {
+    public enum Experience {
         NEW_STAFF,
         TRANSFER_RFA,
         RETURNER
@@ -7,13 +7,13 @@ public class RA {
 
     private String name;
     private int building;
-    private int experience;
+    private Experience experience;
     private int hours;
 
     // -------------------- CONSTRUCTORS --------------------
 
     // General constructor for most situations
-    public RA(String name, int building, int experience) {
+    public RA(String name, int building, Experience experience) {
         this.name = name;
         this.building = building;
         this.experience = experience;
@@ -21,7 +21,7 @@ public class RA {
     }
 
     // In case there needs to be functionality for RAs with hours already worked
-    public RA(String name, int building, int experience, int hours) {
+    public RA(String name, int building, Experience experience, int hours) {
         this.name = name;
         this.building = building;
         this.experience = experience;
@@ -38,7 +38,7 @@ public class RA {
         this.building = building;
     }
 
-    public void experience(int experience) {
+    public void experience(Experience experience) {
         this.experience = experience;
     }
 
@@ -56,7 +56,7 @@ public class RA {
         return building;
     }
 
-    public int experience() {
+    public Experience experience() {
         return experience;
     }
 
