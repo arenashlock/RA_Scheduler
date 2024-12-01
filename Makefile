@@ -6,5 +6,5 @@ run:
 	java -cp ./class Algorithm
 
 clean:
-	rm -rf ./class/*.class
+	rm -rf ./class
 	clear
