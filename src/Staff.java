@@ -75,18 +75,9 @@ public class Staff {
 
             String RA_name = curr_RA.name();
 
-            String RA_experience;
-            if(curr_RA.experience().equals(RA.Experience.NEW_STAFF)) {
-                RA_experience = "New Staff";
-            } else if(curr_RA.experience().equals(RA.Experience.TRANSFER_RFA)) {
-                RA_experience = "Transfer/RFA";
-            } else {
-                RA_experience = "Returner";
-            }
-
             String RA_hours = Integer.toString(curr_RA.hours());
 
-            staff_string += RA_building + ", " + RA_name + ", " + RA_experience + ", " + RA_hours;
+            staff_string += RA_building + ", " + RA_name + ", " + RA_hours;
 
             if(i < 28) {
                 staff_string += "\n";

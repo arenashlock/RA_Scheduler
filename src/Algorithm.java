@@ -3,19 +3,32 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Algorithm {
+    public static final String STAFF_FILEPATH = "./frederiksen_court_staff.csv";
+    public static final String IN_SCHEDULE_FILEPATH = "./SAMPLE_in_schedule.csv";
+    public static final String OUT_SCHEDULE_FILEPATH = "./";
+
     public static Staff staff;
 
     public static void main(String[] args) {
         staff = new Staff();
 
-        create_staff();
+        create_staff(STAFF_FILEPATH);
 
         System.out.println(staff.staff_string());
+
+        // try {
+        //     FileWriter test = new FileWriter(IN_SCHEDULE_FILEPATH, false);
+        //     test.write("Hello");
+        //     test.close();
+        // } catch (IOException e) {
+        //     System.err.println("Something is not right");
+        // }
+
     }
 
-    public static void create_staff() {
+    public static void create_staff(String staff_filepath) {
         // File that contains the staff's information
-        File staffFile = new File("./frederiksen_court_staff.csv");
+        File staffFile = new File(staff_filepath);
 
         // Read through the file and create RA objects
         try {
@@ -57,9 +70,19 @@ public class Algorithm {
                 RA new_RA = new RA(RA_name, RA_building, RA_experience, RA_hours);
 
                 staff.add_RA(new_RA);
+
+                // Close the scanner
+                RAScanner.close();
             }
+
+            // Close the scanner
+            staffScanner.close();
         } catch (FileNotFoundException e) {
             System.err.println("Either the file is missing or the filepath is incorrect!");
         }
+    }
+
+    public static void interpret_schedule(String in_schedule_filepath) {
+
     }
 }
