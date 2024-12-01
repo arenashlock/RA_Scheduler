@@ -1,5 +1,10 @@
-main: main.cpp
-	g++ -Wall -Werror main.cpp -o main
+compile:
+	javac -d ./class ./src/*.java
+	clear
+
+run:
+	java -cp ./class Algorithm
 
 clean:
-	rm -f main *~ *.o
+	rm -rf ./class/*.class
+	clear

@@ -1,0 +1,4 @@
+All you need to do for this project is run some commands:
+    1. "make compile" - compile the project
+    2. "make run" - run the algorithm
+    3. "make clean" - delete unnecessary files
